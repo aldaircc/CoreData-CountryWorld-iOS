@@ -7,12 +7,18 @@
 
 import Foundation
 
+enum responseAPI<T>{
+    case failure(Error)
+    case success(T)
+}
+
 protocol RestAPI {
     func callService<T:Decodable>(url: String,
                      verb: String,
                      headers: [String: Any]?,
                      data: Data?,
-                     objectType: T.Type)
+                     objectType: T.Type,
+                     completion: @escaping(responseAPI<T>) -> Void)
 }
 
 extension RestAPI{
@@ -20,7 +26,8 @@ extension RestAPI{
                      verb: String,
                      headers: [String: Any]? = nil,
                      data: Data? = nil,
-                     objectType: T.Type){
+                     objectType: T.Type,
+                     completion: @escaping(responseAPI<T>) -> Void){
         
         guard let serviceUrl = URL(string: url) else{return}
         
@@ -34,20 +41,22 @@ extension RestAPI{
             
             if let nsError = error as NSError? {
                 fatalError("Unresolved error API \(nsError) - \(nsError.userInfo)")
-                return
+                completion(.failure(nsError))
             }
             
             if let data = data {
                 do {
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
+                    print(json)
                     let decoder = try JSONDecoder().decode(objectType.self, from: data)
-                    print(decoder)
+                    
+                    completion(.success(decoder))
                 } catch {
                     fatalError("Unresolved error from convert data \(error) - \(error.localizedDescription)")
+                    completion(.failure(error))
                 }
             }
-            
-        }
+        }.resume()
         
     }
 }

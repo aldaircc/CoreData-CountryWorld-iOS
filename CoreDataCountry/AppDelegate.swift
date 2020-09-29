@@ -15,6 +15,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
+        let pathDB = NSSearchPathForDirectoriesInDomains(.documentDirectory,
+                                                         .userDomainMask,
+                                                         true)
+        print("Path DB: \(pathDB)")
         let _ = ContextManager.shared.context
         return true
     }
